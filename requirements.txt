@@ -1,0 +1,8 @@
+# Core framework
+Django>=4.2,<5.0
+
+# Database driver
+mysqlclient
+
+# Security
+bcrypt
