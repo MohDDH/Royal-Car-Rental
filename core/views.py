@@ -1,9 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Booking, Car
 
+User = get_user_model()
 # for Puplic Pages
 
-def home(request):
-    return render(request, 'index.html')
+def index(request):
+    owners = User.objects.filter(role="owner", is_approved=True)
+    cars = Car.objects.all()
+    return render(request, "index.html", {"owners": owners, "cars": cars})
 
 def about(request):
     return render(request, 'about.html')
@@ -68,3 +79,35 @@ def approve_booking(request, booking_id):
 
 def reject_booking(request, booking_id):
     pass
+
+
+
+
+
+# ===========================
+# CONTACT FORM
+# ===========================
+def contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip()
+        subject = request.POST.get("subject", "").strip()
+        message = request.POST.get("message", "").strip()
+
+        if not all([name, email, subject, message]):
+            messages.error(request, "❌ Please fill in all fields.")
+            return redirect("contact")
+
+        to_email = getattr(settings, "CONTACT_EMAIL", settings.DEFAULT_FROM_EMAIL)
+        full_subject = f"[Royal Cars Contact] {subject}"
+        full_message = f"From: {name} <{email}>\n\nMessage:\n{message}"
+
+        try:
+            send_mail(full_subject, full_message, settings.DEFAULT_FROM_EMAIL, [to_email])
+            messages.success(request, "✅ Your message has been sent successfully.")
+        except Exception as e:
+            messages.error(request, f"❌ Failed to send message: {e}")
+
+        return redirect("contact")
+
+    return render(request, "contact.html", {"CONTACT_EMAIL": getattr(settings, "CONTACT_EMAIL", None)})
