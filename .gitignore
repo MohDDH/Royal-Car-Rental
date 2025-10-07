@@ -8,6 +8,13 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 
+# Media uploads (user uploaded files)
+media/
+
+# Static files (collected with collectstatic)
+staticfiles/
+static/
+
 # Environment variables
 *.env
 
@@ -21,3 +28,8 @@ env/
 # IDE / Editor settings
 .idea/
 .vscode/
+
+# Migrations 
+
+# */migrations/*.py
+# !*/migrations/__init__.py
